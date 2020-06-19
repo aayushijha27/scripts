@@ -26,6 +26,7 @@ class ComplaintboardSpider(scrapy.Spider):
 			yield scrapy.Request(head, callback=self.actual)
 		
 	def actual(self, response):
+		heading = ''.join(response.xpath("//td[@class='complaint']/div/h4text()").extract()).strip()
 		reviews = ''.join(response.xpath("//td[@class='complaint']/div/div/text()").extract()).strip()
 		if '\n' in reviews:
 			reviews = reviews.replace('\n',' ')
@@ -34,7 +35,7 @@ class ComplaintboardSpider(scrapy.Spider):
 			date = date.replace('\xa0','')
 		# import pdb; pdb.set_trace()
 
-		item = {'Reviews':reviews,'Date':date}
+		item = {'Reviews':reviews,'Date':date,'Heading':heading}
 		yield(item)
 
 		
