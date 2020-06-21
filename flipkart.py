@@ -16,11 +16,14 @@ class FlipkartSpider(scrapy.Spider):
 			'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
 			'Sec-Fetch-Mode':'cors',
 		}
-		self.text=text
-	def start_requests(self):
-
-		url = 'https://www.flipkart.com/jwf-women-maxi-red-blue-dress/p/itmf9rpyybygd4vd?pid=DREF9RNCGFGNRQXV&lid=LSTDREF9RNCGFGNRQXVL70YOF&marketplace=FLIPKART&srno=b_1_1&otracker=browse&fm=organic&iid=en_NHF0Ia0RlvyV4NhWh1LtdkRt31Mz9alxR09BtXPGddlCcrOecClewaAv8ssMdYH9bNWNw1ZedNbYeUM0Mda3Uw%3D%3D&ppt=browse&ppn=browse&ssid=p56xg12mu80000001592554268578'
-		yield scrapy.Request(url = url,headers=self.headers,callback=self.parse)
+		
+	def parse(self, response):
+		with open('data.csv','r') as f:
+			reader = csv.reader(f)
+			next(reader)
+			for row in reader:
+				product_url = row[0]
+				yield scrapy.Request(url=product_url,dont_filter=True,headers=self.headers,callback=self.parse1,meta={'product_url':row[0])
 	
 	
 	def parse(self, response):
@@ -36,8 +39,9 @@ class FlipkartSpider(scrapy.Spider):
 		return_policy = response.xpath("//div[@class='_20PGcF']/text()").extract()[0]
 		cod = response.xpath("//div[@class='_20PGcF']/text()").extract()[1]
 		product_code = response.url
-		product_code = product_code.split('=')[1]	
-		import pdb; pdb.set_trace()
+		product_code = product_code.split('=')[1]
+		product_url = response.url
+# 		import pdb; pdb.set_trace()
 
 		item = {
 
@@ -52,7 +56,8 @@ class FlipkartSpider(scrapy.Spider):
 			'offers' : offers,
 			'return policy' : return_policy,
 			'cod_available' : cod,
-			'product_code':product_code
+			'product_code':product_code,
+			'product url':product_url
 		}
 
 		yield item
